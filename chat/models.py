@@ -43,6 +43,7 @@ class Chat_Room_Member(models.Model):
 class Message(models.Model):
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE)
     content = models.TextField()
+    chatroom = models.ForeignKey(Chat_Room, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
