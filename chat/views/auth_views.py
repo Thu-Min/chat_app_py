@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.contrib.auth import login
 from rest_framework import status
 from rest_framework.response import Response
@@ -22,6 +23,7 @@ def user_login(request):
     user.save()
     
     refresh = RefreshToken.for_user(user)
+    refresh.set_exp(lifetime=timedelta(days=7))  # Set token lifetime to 7 days
     
     return Response({
         'user': UserSerializer(user).data,

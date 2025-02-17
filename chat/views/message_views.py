@@ -1,39 +1,17 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from chat.models import Message, Chat_Room_Member, Chat_Room, User
-from chat.serializers import MessageSerializer, ChatRoomSerializer
+from chat.models import Message, Chat_Room
+from chat.serializers import MessageSerializer
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def message_list_by_chat_room(request):
     chatroom_id = request.query_params.get('chatroom_id')
-    messages = Message.objects.filter(chatroom=chatroom_id).order_by('-timestamp')[:10]
+    messages = Message.objects.filter(chatroom=chatroom_id).order_by('id')[:10]
     serializer = MessageSerializer(messages, many=True)
     
     return Response(serializer.data)
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def create_chat_room(request):
-    try:
-        type = request.data.get('type')
-        members = request.data.get('members')
-
-        chat_room, created = Chat_Room.objects.get_or_create(type=type)
-        if created:
-            chat_room.save()
-
-        Chat_Room_Member.objects.get_or_create(chatroom=chat_room, user=request.user, role='admin')
-
-        for member in members:
-            user = User.objects.get(id=member['id'])
-            Chat_Room_Member.objects.get_or_create(chatroom=chat_room, user=user, role='member')
-
-        serializer = ChatRoomSerializer(chat_room)    
-        return Response(serializer.data)
-    except Exception as e:
-        return Response({'error': str(e)}, status=400)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

@@ -7,9 +7,11 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['id', 'username', 'is_active']
         
 class ChatRoomSerializer(serializers.ModelSerializer):
+    users = UserSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Chat_Room
-        fields = ['id', 'type', 'timestamp']
+        fields = ['id', 'type', 'timestamp', 'users']
         
 class ChatRoomMemberSerializer(serializers.ModelSerializer):
     chat_room = ChatRoomSerializer(read_only=True)
