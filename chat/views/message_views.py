@@ -8,7 +8,7 @@ from chat.serializers import MessageSerializer
 @permission_classes([IsAuthenticated])
 def message_list_by_chat_room(request):
     chatroom_id = request.query_params.get('chatroom_id')
-    messages = Message.objects.filter(chatroom=chatroom_id).order_by('id')[:10]
+    messages = Message.objects.filter(chatroom=chatroom_id).order_by('id')
     serializer = MessageSerializer(messages, many=True)
     
     return Response(serializer.data)

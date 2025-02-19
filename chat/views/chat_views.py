@@ -11,9 +11,8 @@ def create_chat_room(request):
         type = request.data.get('type')
         members = request.data.get('members')
 
-        chat_room, created = Chat_Room.objects.get_or_create(type=type)
-        if created:
-            chat_room.save()
+        chat_room = Chat_Room.objects.create(type=type)
+        chat_room.save()
 
         Chat_Room_Member.objects.get_or_create(chatroom=chat_room, user=request.user, role='admin')
 
