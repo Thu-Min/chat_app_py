@@ -10,26 +10,31 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 @api_view(['POST'])
 def user_login(request):
-    username = request.data.get('username')
-    
-    if not username:
+    try:
+        username = request.data.get('username')
+        
+        if not username:
+            return Response({
+                'error': "Username is required."
+            }, status=status.HTTP_400_BAD_REQUEST)
+                
+        user, created = User.objects.get_or_create(username=username)
+        login(request, user)
+        user.is_active = True
+        user.save()
+        
+        refresh = RefreshToken.for_user(user)
+        refresh.set_exp(lifetime=timedelta(days=7))  # Set token lifetime to 7 days
+        
         return Response({
-            'error': "Username is required."
-        }, status=status.HTTP_400_BAD_REQUEST)
-            
-    user, created = User.objects.get_or_create(username=username)
-    login(request, user)
-    user.is_active = True
-    user.save()
-    
-    refresh = RefreshToken.for_user(user)
-    refresh.set_exp(lifetime=timedelta(days=7))  # Set token lifetime to 7 days
-    
-    return Response({
-        'user': UserSerializer(user).data,
-        'refresh': str(refresh),
-        'access': str(refresh.access_token)
-    })
+            'user': UserSerializer(user).data,
+            'refresh': str(refresh),
+            'access': str(refresh.access_token)
+        })
+    except Exception as e:
+        return Response({
+            'error': str(e)
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
