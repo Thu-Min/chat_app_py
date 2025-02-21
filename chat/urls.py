@@ -1,10 +1,12 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
 from .views import auth_views, message_views, chat_views, user_views
 
 urlpatterns = [
     # Auth APIs
     path('api/login/', auth_views.user_login, name='login'),
     path('api/logout/', auth_views.user_logout, name='logout'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # Chat APIs 
     path('api/create_chat_room/', chat_views.create_chat_room, name='create_chat_room'),
