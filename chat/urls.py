@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/chat_rooms/', chat_views.chat_room_list, name='chat_room_list'),
     path('api/chat_room/', chat_views.get_chat_room, name='chat_room'),
     path('api/delete_chat_room/', chat_views.delete_chat_room, name='delete_chat_room'),
+    path('api/add_member/', chat_views.add_member_to_chat, name="add_member"),
     
     # Message APIs
     path('api/messages/', message_views.message_list_by_chat_room, name='message_list'),

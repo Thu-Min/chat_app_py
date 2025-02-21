@@ -96,3 +96,33 @@ def delete_chat_room(request):
         return Response({'error': 'Chat room not found.'}, status=404)
     except Exception as e:
         return Response({'error': str(e)}, status=400)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_member_to_chat(request):
+    try:
+        chatroom_id = request.data.get('chatroom_id')
+        user_id = request.data.get('user_id')
+
+        chatroom = Chat_Room.objects.get(id=chatroom_id)
+        user = User.objects.get(id=user_id)
+
+        if chatroom.type == 'private':
+            chatroom.type = 'group'
+            chatroom.save()
+
+        Chat_Room_Member.objects.get_or_create(chatroom=chatroom, user=user, role='member')
+
+        members = Chat_Room_Member.objects.filter(chatroom=chatroom).exclude(user=request.user)
+        members_data = [{'id': member.user.id, 'username': member.user.username} for member in members]
+
+        chat_room_data = ChatRoomSerializer(chatroom).data
+        chat_room_data['members'] = members_data
+
+        return Response(chat_room_data)
+    except Chat_Room.DoesNotExist:
+        return Response({'error': 'Chat room not found.'}, status=404)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
