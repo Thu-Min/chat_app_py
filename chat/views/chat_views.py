@@ -31,12 +31,17 @@ def create_chat_room(request):
 
         Chat_Room_Member.objects.get_or_create(chatroom=chat_room, user=request.user, role='admin')
 
+        members_data = []
         for member in members:
             user = User.objects.get(id=member['id'])
             Chat_Room_Member.objects.get_or_create(chatroom=chat_room, user=user, role='member')
+            members_data.append({'id': user.id, 'username': user.username})
 
-        serializer = ChatRoomSerializer(chat_room)    
-        return Response(serializer.data)
+        chat_room_data = ChatRoomSerializer(chat_room).data
+        chat_room_data['members'] = members_data
+        chat_room_data['last_message'] = None
+
+        return Response(chat_room_data)
     except Exception as e:
         return Response({'error': str(e)}, status=400)
     
@@ -73,3 +78,21 @@ def chat_room_list(request):
         chat_rooms_data.append(chat_room_data)
     
     return Response(chat_rooms_data)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_chat_room(request):
+    try:
+        chatroom_id = request.data.get('chatroom_id')
+        chatroom = Chat_Room.objects.get(id=chatroom_id)
+
+        Chat_Room_Member.objects.filter(chatroom=chatroom).delete()
+
+        Message.objects.filter(chatroom=chatroom).delete()
+
+        chatroom.delete()
+        return Response({'success': 'Chat room and its related data deleted successfully.'})
+    except Chat_Room.DoesNotExist:
+        return Response({'error': 'Chat room not found.'}, status=404)
+    except Exception as e:
+        return Response({'error': str(e)}, status=400)
